@@ -1,7 +1,7 @@
 module Spree
   class SalePrice < ActiveRecord::Base
     # TODO validations
-    belongs_to :variant, :class_name => "Spree::Variant"
+    has_one :variant, :class_name => "Spree::Variant"
     has_one :calculator, :class_name => "Spree::Calculator", :as => :calculable, :dependent => :destroy
     accepts_nested_attributes_for :calculator
     validates :calculator, :presence => true
@@ -9,7 +9,11 @@ module Spree
     attr_accessible :value, :start_at, :end_at, :enabled
 
     scope :active, lambda {
-      where("enabled = 'true' AND (start_at <= ? OR start_at IS NULL) AND (end_at >= ? OR end_at IS NULL)", Time.now, Time.now)
+      where("enabled = 1 AND (start_at <= ? OR start_at IS NULL) AND (end_at >= ? OR end_at IS NULL)", Time.now, Time.now)
+    }
+
+    scope :current, lambda {
+      where("(start_at <= ? OR start_at IS NULL) AND (end_at >= ? OR end_at IS NULL)", Time.now, Time.now)
     }
 
     # TODO make this work or remove it

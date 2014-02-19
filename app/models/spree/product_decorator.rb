@@ -1,5 +1,7 @@
 Spree::Product.class_eval do
 
+  attr_accessible :sale_price, :on_sale
+
   # Essentially all read values here are delegated to reading the value on the Master variant
   # All write values will write to all variants (including the Master) unless that method's all_variants parameter is set to false, in which case it will only write to the Master variant
 
@@ -19,7 +21,10 @@ Spree::Product.class_eval do
   def active_sale
     master.active_sale
   end
-  alias :current_sale :active_sale
+
+  def current_sale
+    has_sale_price? ? master.sale_prices.current.order("created_at DESC").first : nil
+  end
 
   def next_active_sale
     master.next_active_sale
@@ -27,7 +32,33 @@ Spree::Product.class_eval do
   alias :next_current_sale :next_active_sale
 
   def sale_price
-    master.sale_price
+    has_sale_price? ? current_sale.price : nil
+  end
+
+  def sale_price=(value)
+    if value.to_f > 0
+      if updateable_active_sale = active_sale
+        updateable_active_sale.value = value
+        updateable_active_sale.save
+      else
+        put_on_sale(value)
+      end
+    end
+  end
+
+  def on_sale
+    master.active_sale.enabled if master.active_sale
+  end
+
+  def on_sale=(checked)
+    disable_sale
+    if checked.to_i == 1
+      enable_sale
+    end
+  end
+
+  def has_sale_price?
+    master.has_sale_price?
   end
 
   def on_sale?
@@ -38,9 +69,9 @@ Spree::Product.class_eval do
     master.original_price
   end
 
-  def price
-    master.price
-  end
+  # def price
+  #   master.price
+  # end
 
   def enable_sale(all_variants = true)
     if all_variants && variants.present?
