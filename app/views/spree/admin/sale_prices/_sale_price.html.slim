@@ -1,8 +1,11 @@
-tr data-hook="products_row" id = spree_dom_id(sale_price) class = "spree-product-sale-price"
-  td.align-center = sale_price.active? ? 'Yes' : ''
+tr data-hook="products_row" id = spree_dom_id(sale_price) class = "spree-product-sale-price #{sale_price.active? ? 'success' : 'error' }"
+  td.align-center = sale_price.active? ? 'Oui' : 'Non'
   td = sale_price.display_price.to_html
   td = (l sale_price.start_at ) if sale_price.start_at
   td = (l sale_price.end_at) if sale_price.end_at
-  td.align-center = sale_price.enabled
+  td.align-center = sale_price.active? ? 'Oui' : 'Non'
   td.actions
-    = link_to_delete sale_price, {url: admin_product_sale_price_url(product, sale_price.id), no_text: true}
+    - if sale_price.active?
+      = link_to_with_icon 'cancel', Spree.t('actions.cancel'), disable_admin_product_sale_price_path(product, sale_price.id), class: 'cancel-method btn btn-warning btn-sm', no_text: true, method: :put
+    - else
+      = link_to_with_icon 'check', '', enable_admin_product_sale_price_path(product, sale_price.id), class: 'cancel-method btn btn-success btn-sm', no_text: true, method: :put

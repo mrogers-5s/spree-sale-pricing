@@ -21,6 +21,18 @@ module Spree
         respond_with(@sale_price)
       end
 
+      def disable
+        @product.disable_sale
+        flash[:success] = "Le solde a été désactivé"
+        redirect_to admin_product_sale_prices_path
+      end
+
+      def enable
+        @product.enable_sale
+        flash[:success] = "Le solde a été activé"
+        redirect_to admin_product_sale_prices_path
+      end
+
       private
 
       def load_product

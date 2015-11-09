@@ -1,4 +1,4 @@
-table.index#product_sale_prices data-hook="sale_price_table"
+table.index.table#product_sale_prices data-hook="sale_price_table"
   colgroup
     col
     col
@@ -8,11 +8,11 @@ table.index#product_sale_prices data-hook="sale_price_table"
     col
   thead
     tr data-hook="products_header"
-      th = Spree.t('sale_price_active')
-      th = Spree.t('sale_price')
-      th = Spree.t('sale_price_start_at')
-      th = Spree.t('sale_price_end_at')
-      th = Spree.t('sale_price_enabled')
+      th = t('sale_price_active')
+      th = t('sale_price')
+      th = t('sale_price_start_at')
+      th = t('sale_price_end_at')
+      th = t('sale_price_enabled')
       th.actions
   tbody
     = render partial: "sale_price", collection: product.master.sale_prices, locals: {product: product}
