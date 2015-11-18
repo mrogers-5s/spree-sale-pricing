@@ -2,7 +2,7 @@ module Spree
   module Admin
     class SalePricesController < BaseController
 
-      before_filter :load_product
+      before_filter :load_product, :except => [:import]
 
       respond_to :js, :html
 
@@ -13,6 +13,48 @@ module Spree
       def create
         @sale_price = @product.put_on_sale params[:sale_price][:value], sale_price_params
         respond_with(@sale_price)
+      end
+
+      def import
+
+        error = false
+
+        session[:return_to] ||= request.referer
+
+        file = params[:spree_sales_file].tempfile
+
+        if File.extname(file.path) != ".csv"
+          error = "Mauvais type de fichier: "+File.extname(file.path)
+        end
+
+        #Dir.glob("*").max_by{|f| /^(.+?)_/.match(File.basename(f)).captures[0]}
+        if error.blank?
+          begin
+
+            SmarterCSV.process(file.path, {:col_sep => ';', :chunk_size => 100}) do |chunk|
+
+              puts "chunk"
+
+              SalesWorker.perform_async(chunk)
+            end
+
+          rescue Redis::CannotConnectError
+            error = "Une erreur de connection est survenue"
+          rescue StandardError
+            error = "Une erreur inconnue est survenue"
+          end
+        end
+
+        if error.nil?
+          flash[:error] = error
+        else
+          flash[:notice] = "Opération effectuée avec succès."
+        end
+        if session[:return_to]
+          redirect_to session.delete(:return_to)
+        else
+          redirect_to("/admin")
+        end
       end
 
       def destroy
@@ -50,6 +92,8 @@ module Spree
             :enabled
         )
       end
+
     end
   end
 end
+

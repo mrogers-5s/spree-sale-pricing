@@ -1,0 +1,6 @@
+<ul id="sidebar-sales" class="collapse nav nav-pills nav-stacked" data-hook="admin_soldes_sub_tabs">
+  <%= tab :importation,  :url => '#spree_sales', :data_hook=> 'spree_sales_import'%>
+  <%= form_tag('/admin/spree_sales/import', multipart:true) do -%>
+      <input type='file' id='spree_sales_file' name='spree_sales_file' style='visibility: hidden; width: 1px; height: 1px' multiple />
+  <% end -%>
+</ul>

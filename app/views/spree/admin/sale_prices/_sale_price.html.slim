@@ -6,6 +6,6 @@ tr data-hook="products_row" id = spree_dom_id(sale_price) class = "spree-product
   td.align-center = sale_price.active? ? 'Oui' : 'Non'
   td.actions
     - if sale_price.active?
-      = link_to_with_icon 'cancel', Spree.t('actions.cancel'), disable_admin_product_sale_price_path(product, sale_price.id), class: 'cancel-method btn btn-warning btn-sm', no_text: true, method: :put
+      = link_to 'X', disable_admin_product_sale_price_path(product, sale_price.id), method: :put
     - else
-      = link_to_with_icon 'check', '', enable_admin_product_sale_price_path(product, sale_price.id), class: 'cancel-method btn btn-success btn-sm', no_text: true, method: :put
+      = link_to 'X', enable_admin_product_sale_price_path(product, sale_price.id), method: :put
