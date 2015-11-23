@@ -6,6 +6,15 @@ Spree::Price.class_eval do
   end
 
   def new_sale(value, params = {})
+
+    type = params.fetch(:calculator_type)
+
+    if (type && type.type == "Spree::Calculator::PercentOffSalePriceCalculator")
+      params[:calculator_type] = Spree::Calculator::PercentOffSalePriceCalculator.new
+
+      puts "TYPE"
+    end
+
     sale_price_params = {
         value: value,
         start_at: params.fetch(:start_at, Time.now),
