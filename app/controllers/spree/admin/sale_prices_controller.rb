@@ -30,15 +30,15 @@ module Spree
         #Dir.glob("*").max_by{|f| /^(.+?)_/.match(File.basename(f)).captures[0]}
         if error.blank?
           begin
+            #group = Spree::SaleGroup.create(number: DateTime.now, name: params[:spree_sales_file].original_filename)
 
             SmarterCSV.process(file.path, {:col_sep => ';', :chunk_size => 100}) do |chunk|
-
-              puts "chunk"
-
+              #SalesWorker.perform_async(chunk, group.id)
               SalesWorker.perform_async(chunk)
             end
 
           rescue Redis::CannotConnectError
+            group.delete
             error = "Une erreur de connection est survenue"
           rescue StandardError
             error = "Une erreur inconnue est survenue"
