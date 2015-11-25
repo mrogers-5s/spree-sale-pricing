@@ -16,7 +16,7 @@ class SalesWorker
           if row['sale_type'] && row['sale_type'] == 'percent' && row['sale_price'] < 1
             @sale_price = product.put_on_sale row['sale_price'], { calculator_type: Spree::Calculator::PercentOffSalePriceCalculator.new }
           else
-            @sale_price = product.put_on_sale row['sale_price']
+            @sale_price = product.put_on_sale row['sale_price'], { start_at: row['start_date'], end_at: row['end_date']}
           end
           #group.sale_prices << @sale_price
         else
