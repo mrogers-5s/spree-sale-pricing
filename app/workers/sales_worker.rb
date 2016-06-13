@@ -7,14 +7,13 @@ class SalesWorker
     ActiveRecord::Base.transaction do
       chunk.each do |row|
 
-        product = Spree::Product.ransack({product_code_eq: row['product_id']}).result(distinct: true).first
+        product = Spree::Product.ransack({product_code_eq: row['product_id']}).result(distinct: true)
 
         if product
-          puts "#############################"
-          puts row.inspect
-          puts "#############################"
-          if row['sale_price'].to_f > 1 && row['start_date'] && row['product_id']
-            @sale_price = product.put_on_sale row['sale_price'], { start_at: row['start_date'], end_at: row['end_date']}
+          product.each do |p|
+            if row['sale_price'].to_f > 1 && row['start_date'] && row['product_id']
+              @sale_price = p.put_on_sale row['sale_price'], { start_at: row['start_date'], end_at: row['end_date']}
+            end
           end
         else
           puts row.inspect
