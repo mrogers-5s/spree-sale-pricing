@@ -1,0 +1,14 @@
+<tr data-hook="products_row" id="<%= spree_dom_id(sale_price) %>" class="spree-product-sale-price <%= sale_price.active? ? 'success' : 'error' %>">
+  <td class="align-center"><%= sale_price.active? ? Spree.t(:say_yes) : Spree.t(:say_no) %></td>
+  <td><%= sale_price.display_price.to_html %></td>
+  <td><%= (l sale_price.start_at ) if sale_price.start_at %></td>
+  <td><%= (l sale_price.end_at) if sale_price.end_at %></td>
+  <td class="align-center"><%= sale_price.active? ? Spree.t(:say_yes) : Spree.t(:say_no) %></td>
+  <td class="actions">
+    <% if sale_price.active? %>
+      <%= link_to 'X', disable_admin_product_sale_price_path(product, sale_price.id), method: :put %>
+    <% else %>
+      <%= link_to 'X', enable_admin_product_sale_price_path(product, sale_price.id), method: :put %>
+    <% end %>
+  </td>
+</tr>

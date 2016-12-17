@@ -1,0 +1,23 @@
+<table class="index table" id="product_sale_prices" data-hook="sale_price_table">
+  <colgroup>
+    <col></col>
+    <col></col>
+    <col style="width: 30%"></col>
+    <col style="width: 30%"></col>
+    <col></col>
+    <col></col>
+  </colgroup>
+  <thead>
+    <tr data-hook="products_header">
+      <th><%= t('sale_price_active') %></th>
+      <th><%= t('sale_price') %></th>
+      <th><%= t('sale_price_start_at') %></th>
+      <th><%= t('sale_price_end_at') %></th>
+      <th><%= t('sale_price_enabled') %></th>
+      <th class="actions"></th>
+    </tr>
+  </thead>
+  <tbody>
+    <%= render partial: "sale_price", collection: product.master.sale_prices, locals: {product: product} %>
+  </tbody>
+</table>
