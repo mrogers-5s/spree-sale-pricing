@@ -9,3 +9,6 @@ nbproject
 *.swp
 spec/dummy
 .rvmrc
+.ruby-version
+coverage
+Gemfile.lock

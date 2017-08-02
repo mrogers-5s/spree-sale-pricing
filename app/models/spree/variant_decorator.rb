@@ -1,10 +1,15 @@
 Spree::Variant.class_eval do
 
-  delegate_belongs_to :default_price, :sale_price, :original_price
+  has_many :sale_prices, through: :prices
 
-  # TODO also accept a class reference for calculator type instead of only a string
-  def put_on_sale(value, calculator_type = "Spree::Calculator::DollarAmountSalePriceCalculator", all_currencies = true, start_at = Time.now, end_at = nil, enabled = true)
-    run_on_prices(all_currencies) { |p| p.put_on_sale value, calculator_type, start_at, end_at, enabled }
+  delegate_belongs_to :default_price, :sale_price, :original_price, :on_sale?, :discount_percent
+
+  def put_on_sale(value, params = {})
+    currencies = params.fetch(:currencies, [])
+    if params[:currency].present?
+      currencies << params[:currency] unless currencies.include? params[:currency]
+    end
+    run_on_prices(currencies) { |p| p.put_on_sale value, params }
   end
   alias :create_sale :put_on_sale
 
@@ -36,29 +41,31 @@ Spree::Variant.class_eval do
     Spree::Price.new variant_id: self.id, currency: currency, amount: price_in(currency).original_price
   end
 
-  def enable_sale(all_currencies = true)
-    run_on_prices(all_currencies) { |p| p.enable_sale }
+  def enable_sale(currencies = nil)
+    run_on_prices(currencies) { |p| p.enable_sale }
   end
 
-  def disable_sale(all_currencies = true)
-    run_on_prices(all_currencies) { |p| p.disable_sale }
+  def disable_sale(currencies = nil)
+    run_on_prices(currencies) { |p| p.disable_sale }
   end
 
-  def start_sale(end_time = nil, all_currencies = true)
-    run_on_prices(all_currencies) { |p| p.start_sale end_time }
+  def start_sale(end_time = nil, currencies = nil)
+    run_on_prices(currencies) { |p| p.start_sale end_time }
   end
 
-  def stop_sale(all_currencies=true)
-    run_on_prices(all_currencies) { |p| p.stop_sale }
+  def stop_sale(currencies = nil)
+    run_on_prices(currencies) { |p| p.stop_sale }
   end
   
   private
-   
-  def run_on_prices(all_currencies, &block)
-    if all_currencies && prices.present?
-      prices.each { |p| block.call p }
-    else
-      block.call default_price  
+    # runs on all prices or on the ones with the currencies you've specified
+    def run_on_prices(currencies = nil, &block)
+      if currencies.present? && currencies.any?
+        prices_with_currencies = prices.select { |p| currencies.include?(p.currency) }
+        prices_with_currencies.each { |p| block.call p }
+      else
+        prices.each { |p| block.call p }
+      end
     end
-  end
+
 end

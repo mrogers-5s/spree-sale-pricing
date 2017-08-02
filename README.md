@@ -8,20 +8,15 @@ sales, have a historical record of sale prices and put sales on hold.
 Requirements
 ------------
 
-This Gem has only been tested with Spree 1.0.0 and Ruby 1.9.3. It might work with other version of Spree but I'm not
-sure. It should work with Ruby 1.9.2 but I haven't verified. It does not support Ruby versions earlier than 1.9 for sure.
-If you test against other version of Spree or Ruby I'd love to hear about the results :)
+This Gem has been tested with Spree 3.1-stable and Ruby 2.3.1
+It does not support Ruby versions earlier than 1.9 for sure.
 
 Installing
 ----------
 
 In your Gemfile add the following for the latest released version:
 
-    gem 'spree_sale_pricing'
-
-_OR_ to work from master:
-
-    gem 'spree_sale_pricing', :git => 'git://github.com/jonathandean/spree-sale-pricing.git'
+    gem 'spree_sale_pricing', github: 'WebGents/spree-sale-pricing', branch: '3-1-stable'
 
 Install the Gem:
 
@@ -38,11 +33,7 @@ Run database migrations in your app:
 Usage
 -----
 
-At the moment there is only a Ruby interface because I haven't had time to make an admin interface yet. I hope to be able
-to get to that soon.
-
-Simple example assuming you have a product in your database with the price of $20 and you want to put it on sale
-immediately for $10:
+The following example is assuming that you have a product in your database with the price of $20 and you want to put it on sale immediately for $10:
 
     product = Spree::Product.first
 
@@ -55,13 +46,13 @@ immediately for $10:
     puts product.original_price.to_f     # => 20.0
     puts product.on_sale?                # => true
 
-By default it uses the supplied Spree::Calculator::DollarAmountSalePriceCalculator which essentially just returns the
+By default it uses the supplied Spree::Calculator::FixedAmountSalePriceCalculator which essentially just returns the
 value you give it as the sale price.
 
 You can also give a certain percentage off by specifying that you want to use Spree::Calculator::PercentOffSalePriceCalculator.
 Note that the percentage is given as a float between 0 and 1, not the integer amount from 0 to 100.
 
-    product.put_on_sale 0.2, "Spree::Calculator::PercentOffSalePriceCalculator"
+    product.put_on_sale 0.2, { calculator_type: Spree::Calculator::PercentOffSalePriceCalculator.new }
     puts product.price.to_f              # => 16.0
 
 This extension gives you all of the below methods on both your Products and Variants. If accessed on the Product when reading values,
@@ -74,6 +65,8 @@ the master variant and leave the other variants untouched.
 **sale_price**                                        Returns the sale price if currently on sale, nil if not
 
 **original_price**                                    Always returns the original price
+
+**discount_percent**                                  Return the percentage of discount
 
 **on_sale?**                                          Return a boolean indication if it is currently on sale (enabled is set to true and we are currently within the active date range)
 
@@ -104,14 +97,14 @@ variants on sale or just particular variants. See the explanation of put\_on\_sa
 Options for put\_on\_sale (create_sale)
 ---------------------------------------
 
-    put_on_sale(value, calculator_type = "Spree::Calculator::DollarAmountSalePriceCalculator", all_variants = true, start_at = Time.now, end_at = nil, enabled = true)
+    put_on_sale(value, { calculator_type: Spree::Calculator::PercentOffSalePriceCalculator.new, all_variants: true, start_at: Time.now, end_at: nil, enabled: true })
 
 **value**           (_float_)
 
-This is either the sale price that you want to sell the product for (if using the default DollarAmountSalePriceCalculator)
+This is either the sale price that you want to sell the product for (if using the default FixedAmountSalePriceCalculator)
 or the float representation of the percentage off of the original price (between 0 and 1)
 
-**calculator_type** (_string_)    - Default: **"Spree::Calculator::DollarAmountSalePriceCalculator"**
+**calculator_type** (_string_)    - Default: **"Spree::Calculator::FixedAmountSalePriceCalculator"**
 
 Specify which calculator to use for determining the sale price. The default calculator will take the value as is and use it
 as the sale price. You can also pass in another calculator value to determine the sale price differently, such as the

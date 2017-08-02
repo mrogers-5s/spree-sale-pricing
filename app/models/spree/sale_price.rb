@@ -1,19 +1,18 @@
 module Spree
   class SalePrice < ActiveRecord::Base
-    # TODO validations
-    belongs_to :price, :class_name => "Spree::Price"
-    has_one :calculator, :class_name => "Spree::Calculator", :as => :calculable, :dependent => :destroy
+
+    belongs_to :price, class_name: "Spree::Price"
+    delegate_belongs_to :price, :currency
+
+    has_one :variant, through: :price
+
+    has_one :calculator, class_name: "Spree::Calculator", as: :calculable, dependent: :destroy
+    validates :calculator, presence: true
     accepts_nested_attributes_for :calculator
-    
-    validates :calculator, :presence => true
-    validates :price, :presence => true
-    
-    attr_accessible :value, :start_at, :end_at, :enabled
 
-    scope :active, lambda {
-      where("enabled = 't' AND (start_at <= ? OR start_at IS NULL) AND (end_at >= ? OR end_at IS NULL)", Time.now, Time.now)
-    }
+    scope :active, -> { where(enabled: true).where('(start_at <= ? OR start_at IS NULL) AND (end_at >= ? OR end_at IS NULL)', Time.now, Time.now) }
 
+    before_destroy :touch_product
     # TODO make this work or remove it
     #def self.calculators
     #  Rails.application.config.spree.calculators.send(self.to_s.tableize.gsub('/', '_').sub('spree_', ''))
@@ -23,12 +22,7 @@ module Spree
       calculator.class.to_s if calculator
     end
 
-    def calculator_type=(calculator_type)
-      clazz = calculator_type.constantize if calculator_type
-      self.calculator = clazz.new if clazz and not self.calculator.is_a? clazz
-    end
-
-    def price
+    def calculated_price
       calculator.compute self
     end
 
@@ -38,6 +32,10 @@ module Spree
 
     def disable
       update_attribute(:enabled, false)
+    end
+
+    def active?
+      Spree::SalePrice.active.include? self
     end
 
     def start(end_time = nil)
@@ -50,5 +48,16 @@ module Spree
     def stop
       update_attributes({ end_at: Time.now, enabled: false })
     end
+
+    # Convenience method for displaying the price of a given sale_price in the table
+    def display_price
+      Spree::Money.new(value || 0, { currency: price.currency })
+    end
+
+    protected
+      def touch_product
+        self.variant.product.touch
+      end
+
   end
 end
